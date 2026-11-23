@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Create account' if mode == 'register' else 'Log in' }} · PathFinder AI{% endblock %}
+{% block content %}
+<section class="auth-page">
+  <div class="eyebrow">PATHFINDER AI</div>
+  <h1>{{ 'Create your account' if mode == 'register' else 'Welcome back' }}</h1>
+  <p>{{ 'Sign up to save your resume profile and job recommendations.' if mode == 'register' else 'Log in to continue to your job recommendations.' }}</p>
+  <form class="auth-form" method="post">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <label>Email address<input type="email" name="email" autocomplete="email" required value="{{ request.form.get('email', '') }}"></label>
+    <label>Password<input type="password" name="password" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}" required {% if mode == 'register' %}minlength="8"{% endif %}></label>
+    {% if mode == 'register' %}
+    <label>Confirm password<input type="password" name="confirm_password" autocomplete="new-password" minlength="8" required></label>
+    {% endif %}
+    <button class="button primary" type="submit">{{ 'Create account' if mode == 'register' else 'Log in' }} <span>→</span></button>
+  </form>
+  <p class="auth-switch">
+    {% if mode == 'register' %}Already registered? <a href="{{ url_for('auth.login') }}">Log in</a>
+    {% else %}New to PathFinder AI? <a href="{{ url_for('auth.register') }}">Create an account</a>{% endif %}
+  </p>
+</section>
+{% endblock %}

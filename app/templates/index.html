@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy"><div class="eyebrow"><span class="pulse"></span> YOUR NEXT CHAPTER STARTS HERE</div>
+    <h1>Find work that<br><em>fits your potential.</em></h1>
+    <p>AI-powered job matching that understands your skills, explains every recommendation, and shows you what to learn next.</p>
+    <div class="hero-stats"><div><b>{{ total_jobs }}</b><small>curated roles</small></div><div><b>AI</b><small>resume matching</small></div><div><b>100%</b><small>explainable</small></div></div>
+  </div>
+  <div class="hero-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="art-card"><div class="art-icon">✦</div><div class="art-lines"><i></i><i></i><i></i></div><div class="art-score">92<span>%</span><small>profile match</small></div></div><div class="float-tag tag-top">✧ Skills detected</div><div class="float-tag tag-bottom">↗ Career momentum</div></div>
+</section>
+<section class="workspace" id="resume">
+  <div class="section-heading"><div><div class="eyebrow">01 / YOUR PROFILE</div><h2>Start with your resume</h2><p>Upload your resume to personalize recommendations.</p></div><span class="step-chip">PDF or DOCX · Max 5 MB</span></div>
+  <div class="upload-panel">
+    <div class="upload-icon">⇧</div><div class="upload-copy"><h3>{% if profile.resume_name %}{{ profile.resume_name }}{% else %}Drop your resume here{% endif %}</h3><p>{% if profile.resume_name %}Your profile is active. Upload another version to update it.{% else %}We'll extract skills and experience. Your file is processed locally and not retained.{% endif %}</p></div>
+    <form action="{{ url_for('main.upload') }}" method="post" enctype="multipart/form-data" class="upload-form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label class="file-button">Choose file<input type="file" name="resume" accept=".pdf,.docx" required></label>
+      <label class="consent"><input type="checkbox" name="consent" value="yes" required> I consent to processing my resume for job matching.</label>
+      <button class="button primary" type="submit">Analyze resume <span>→</span></button>
+    </form>
+  </div>
+  {% if skills %}
+  <div class="skills-row"><div><b>Detected skills</b><small>{{ skills|length }} identified from your resume</small></div><div class="chips">{% for skill in skills %}<span class="chip">{{ skill }}</span>{% endfor %}</div></div>
+  {% endif %}
+</section>
+<section class="results-section">
+  <div class="section-heading result-heading"><div><div class="eyebrow">02 / CURATED FOR YOU</div><h2>Recommended opportunities</h2><p>Ranked by resume relevance, skill coverage and your feedback.</p></div><div class="result-count"><b>{{ results|length }}</b><small>matching roles</small></div></div>
+  <form class="filters" method="get">
+    <label>Location<input name="location" placeholder="Any location" value="{{ filters.location }}"></label>
+    <label>Job type<select name="job_type"><option value="">All types</option>{% for v in ['Full-time','Internship'] %}<option {% if filters.job_type==v %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+    <label>Experience<select name="experience"><option value="">Any level</option>{% for v in ['Entry level','Junior','Internship'] %}<option {% if filters.experience==v %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+    <label>Remote<select name="remote"><option value="">Any</option><option value="yes" {% if filters.remote=='yes' %}selected{% endif %}>Remote-friendly</option></select></label>
+    <button class="button dark" type="submit">Filter roles</button><a class="clear-filter" href="{{ url_for('main.index') }}">Clear</a>
+  </form>
+  {% if not profile.resume_text %}<div class="notice">You're viewing sample recommendations. Upload a resume for personalized ranking. The system uses TF-IDF content matching and a transparent skill-overlap signal.</div>{% endif %}
+  <div class="job-list">
+    {% for job in results %}
+    <article class="job-card">
+      <div class="company-logo">{{ job.company[:1] }}</div>
+      <div class="job-main"><div class="job-meta"><span>{{ job.company }}</span><span class="dot">•</span><span>{{ job.location }}</span></div><h3>{{ job.title }}</h3><div class="job-tags"><span>{{ job.job_type }}</span><span>{{ job.experience }}</span>{% if job.remote %}<span>Remote-friendly</span>{% endif %}</div>
+        <p class="job-description">{{ job.description }}</p>
+        <div class="match-explain"><div class="skill-group"><small>Matched skills</small><div class="chips">{% for s in job.matched[:5] %}<span class="chip matched">{{ s }}</span>{% else %}<span class="muted">Upload a resume to see skill matches</span>{% endfor %}</div></div>
+          <div class="skill-group"><small>Skills to build</small><div class="chips">{% for s in job.missing[:4] %}<span class="chip missing">{{ s }}</span>{% else %}<span class="muted">No identified gaps</span>{% endfor %}</div></div></div>
+        <div class="job-actions"><a href="{{ job.url }}" target="_blank" rel="noopener">Explore learning resource ↗</a>
+          <form action="{{ url_for('main.feedback',job_id=job.id) }}" method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button name="action" value="like" title="Like">♡ Like</button><button name="action" value="save" title="Save">＋ Save</button><button name="action" value="dislike" title="Not relevant">Not for me</button></form></div>
+      </div>
+      <div class="match-score"><div class="score-ring" style="--score:{{ job.score }}%"><span>{{ job.score }}<small>%</small></span></div><small>match score</small><span class="score-caption">{{ 'Strong fit' if job.score >= 55 else 'Potential fit' if job.score >= 30 else 'Explore' }}</span></div>
+    </article>
+    {% else %}<div class="empty-state"><h3>No roles match those filters</h3><p>Try clearing one or more filters.</p><a href="{{ url_for('main.index') }}">Show all jobs →</a></div>{% endfor %}
+  </div>
+</section>
+<section class="privacy-panel"><div><div class="eyebrow">YOUR DATA, YOUR CHOICE</div><h3>Privacy controls</h3><p>Your resume is processed for matching. The uploaded file is deleted after parsing; extracted text is stored in the local SQLite database until you delete it.</p></div><form action="{{ url_for('main.delete_data') }}" method="post" onsubmit="return confirm('Delete your resume profile and all feedback history?')"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="button outline" type="submit">Delete my data</button></form></section>
+{% endblock %}

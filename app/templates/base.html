@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}PathFinder AI{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('main.index') }}"><span class="brand-mark">✦</span> PathFinder<span class="brand-ai">AI</span></a>
+  {% if g.user %}
+  <nav><a href="{{ url_for('main.index') }}">Discover jobs</a><a href="{{ url_for('main.saved') }}">Saved jobs</a></nav>
+  <div class="account-nav"><span>{{ g.user.email }}</span><form action="{{ url_for('auth.logout') }}" method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="nav-cta" type="submit">Log out</button></form></div>
+  {% else %}
+  <nav><a href="{{ url_for('auth.login') }}">Log in</a><a href="{{ url_for('auth.register') }}">Create account</a></nav>
+  <a class="nav-cta" href="{{ url_for('auth.register') }}">Get started <span>↗</span></a>
+  {% endif %}
+</header>
+<main class="shell">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="alerts">{% for category,message in messages %}<div class="alert {{ category }}">{{ message }}<button onclick="this.parentElement.remove()">×</button></div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer><span>PathFinder AI</span><span>Recommendations are suggestions, not guarantees.</span><span>Built for students & fresh graduates</span></footer>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body></html>
