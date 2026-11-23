@@ -17,7 +17,7 @@ A Flask web application based on the attached **AI-Powered Job Recommendation Sy
 
 ## Technology / implementation notes
 
-The proposal names Flask, scikit-learn, spaCy, Sentence-Transformers, SQLite/PostgreSQL and APScheduler. This ready-to-run prototype uses Flask, scikit-learn TF-IDF and SQLite by default so it can run on a standard laptop without downloading a large neural model. The skill extractor uses a dictionary and resume text parser. Sentence-Transformer embeddings, live job API integrations, APScheduler refresh, production deployment hardening, and a real student user study are extension work rather than falsely claimed as completed. The interaction-based collaborative signal is a lightweight prototype; early data may be sparse and should be disclosed as such in evaluation.
+The proposal names Flask, scikit-learn, spaCy, Sentence-Transformers, SQLite/PostgreSQL and APScheduler. This ready-to-run prototype uses Flask, scikit-learn TF-IDF and SQLite locally, and PostgreSQL when `DATABASE_URL` is configured, so it can run on a standard laptop without downloading a large neural model. The skill extractor uses a dictionary and resume text parser. Sentence-Transformer embeddings, live job API integrations, APScheduler refresh, production deployment hardening, and a real student user study are extension work rather than falsely claimed as completed. The interaction-based collaborative signal is a lightweight prototype; early data may be sparse and should be disclosed as such in evaluation.
 
 The included job data is sample/demo data, not a live job feed. Links point to learning resources rather than claiming that each is an active vacancy. Add permitted open-dataset/API records before presenting the system as live.
 
@@ -76,7 +76,9 @@ When upgrading an existing local database, its previous single-user profile and 
 
 The root `pyproject.toml` configures Vercel to load the Flask app from `run.py` (`run:app`). Add a strong `SECRET_KEY` in the Vercel project's **Settings → Environment Variables**, then redeploy.
 
-This prototype stores accounts, resumes, and feedback in a local SQLite database. Vercel Functions do not provide durable local storage, so those records will not persist reliably across deployments or function instances. For real accounts, migrate the database to hosted PostgreSQL (and use durable object storage for uploaded files), or deploy this app on a host with a persistent disk.
+Create a managed PostgreSQL database through the Vercel Marketplace (for example, Neon), then add its connection string as `DATABASE_URL` in the Vercel project's **Settings → Environment Variables** for Production and Preview. Keep `SECRET_KEY` set there as well. The app creates its tables and seeds the sample jobs in the configured database. The database starts with no user accounts; the local SQLite database is not automatically transferred. Locally, the app continues to use SQLite when `DATABASE_URL` is unset.
+
+Uploaded resume files are temporary and written to the system temp directory; extracted profile text is stored in the database after consent. Never commit the real database URL or secret key.
 
 ## Run on macOS / Linux
 

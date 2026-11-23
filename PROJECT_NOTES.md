@@ -10,6 +10,7 @@
 - Explainability and skill gaps: implemented.
 - Filters and feedback: implemented.
 - Account registration, login/logout, CSRF protection and per-account profile/feedback storage: implemented for the local prototype.
+- PostgreSQL backend selected by `DATABASE_URL`; SQLite remains the local development default.
 - Data refresh and live open API integration: not implemented; sample dataset is seeded.
 - Evaluation and user study: plan documented; no fabricated measurements.
 

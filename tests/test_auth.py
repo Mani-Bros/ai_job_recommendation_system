@@ -1,7 +1,7 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from app import create_app
 from app import db as database
@@ -145,4 +145,22 @@ class AuthenticationTests(unittest.TestCase):
         self.assertIn(
             b"viewing sample recommendations",
             second_client.get("/").data,
+        )
+
+    def test_database_url_is_required_on_vercel(self):
+        with patch.dict("os.environ", {"VERCEL": "1", "DATABASE_URL": ""}):
+            with self.assertRaisesRegex(RuntimeError, "DATABASE_URL"):
+                with database.connect():
+                    pass
+
+    def test_postgres_connection_translates_sqlite_placeholders(self):
+        connection = Mock()
+        db = database.DatabaseConnection(connection, postgres=True)
+        db.execute(
+            "SELECT id FROM users WHERE email=?",
+            ("person@example.com",),
+        )
+        connection.execute.assert_called_once_with(
+            "SELECT id FROM users WHERE email=%s",
+            ("person@example.com",),
         )

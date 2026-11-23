@@ -5,9 +5,10 @@ import sqlite3
 from functools import wraps
 
 from flask import Blueprint, abort, flash, g, redirect, render_template, request, session, url_for
+from psycopg import IntegrityError as PostgresIntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from .db import connect
+from .db import connect, uses_postgres
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -72,12 +73,25 @@ def register():
         else:
             try:
                 with connect() as db:
-                    cursor = db.execute(
-                        "INSERT INTO users(email, password_hash) VALUES(?, ?)",
-                        (email, generate_password_hash(password)),
-                    )
-                    user_id = cursor.lastrowid
-                    if db.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 1:
+                    insert_user = "INSERT INTO users(email, password_hash) VALUES(?, ?)"
+                    if uses_postgres():
+                        user_id = db.execute(
+                            insert_user + " RETURNING id",
+                            (email, generate_password_hash(password)),
+                        ).fetchone()["id"]
+                    else:
+                        cursor = db.execute(
+                            insert_user,
+                            (email, generate_password_hash(password)),
+                        )
+                        user_id = cursor.lastrowid
+
+                    if (
+                        not uses_postgres()
+                        and db.execute(
+                            "SELECT COUNT(*) AS count FROM users"
+                        ).fetchone()["count"] == 1
+                    ):
                         legacy_profile = db.execute(
                             "SELECT resume_name, resume_text, skills, consent, updated_at "
                             "FROM profile WHERE id=1"
@@ -94,7 +108,7 @@ def register():
                             "UPDATE interactions SET user_id=? WHERE user_id IS NULL",
                             (user_id,),
                         )
-            except sqlite3.IntegrityError:
+            except (sqlite3.IntegrityError, PostgresIntegrityError):
                 flash("An account with that email already exists.", "error")
             else:
                 session.clear()
