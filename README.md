@@ -72,6 +72,12 @@ The included job data is sample/demo data, not a live job feed. Links point to l
 Set `SECRET_KEY` to a long, random value before running a deployment that needs sessions to survive app restarts. A development key is generated automatically when this environment variable is absent.
 When upgrading an existing local database, its previous single-user profile and feedback are assigned to the first account registered.
 
+## Deploy to Vercel
+
+The root `pyproject.toml` configures Vercel to load the Flask app from `run.py` (`run:app`). Add a strong `SECRET_KEY` in the Vercel project's **Settings → Environment Variables**, then redeploy.
+
+This prototype stores accounts, resumes, and feedback in a local SQLite database. Vercel Functions do not provide durable local storage, so those records will not persist reliably across deployments or function instances. For real accounts, migrate the database to hosted PostgreSQL (and use durable object storage for uploaded files), or deploy this app on a host with a persistent disk.
+
 ## Run on macOS / Linux
 
 ```bash
