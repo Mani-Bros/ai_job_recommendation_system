@@ -76,7 +76,7 @@ When upgrading an existing local database, its previous single-user profile and 
 
 The root `pyproject.toml` configures Vercel to load the Flask app from `run.py` (`run:app`). Add a strong `SECRET_KEY` in the Vercel project's **Settings → Environment Variables**, then redeploy.
 
-Create a managed PostgreSQL database through the Vercel Marketplace (for example, Neon), then add its connection string as `DATABASE_URL` in the Vercel project's **Settings → Environment Variables** for Production and Preview. Keep `SECRET_KEY` set there as well. The app creates its tables and seeds the sample jobs in the configured database. The database starts with no user accounts; the local SQLite database is not automatically transferred. Locally, the app continues to use SQLite when `DATABASE_URL` is unset.
+Create a managed PostgreSQL database through the Vercel Marketplace (for example, Neon). The app accepts its connection string as either `DATABASE_URL` or Vercel's `POSTGRES_URL`; keep `SECRET_KEY` set for Production and Preview too. The app creates its tables and seeds the sample jobs in the configured database. The database starts with no user accounts; the local SQLite database is not automatically transferred. Locally, the app continues to use SQLite when neither PostgreSQL variable is set.
 
 Uploaded resume files are temporary and written to the system temp directory; extracted profile text is stored in the database after consent. Never commit the real database URL or secret key.
 

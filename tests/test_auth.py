@@ -148,10 +148,20 @@ class AuthenticationTests(unittest.TestCase):
         )
 
     def test_database_url_is_required_on_vercel(self):
-        with patch.dict("os.environ", {"VERCEL": "1", "DATABASE_URL": ""}):
-            with self.assertRaisesRegex(RuntimeError, "DATABASE_URL"):
+        with patch.dict(
+            "os.environ",
+            {"VERCEL": "1", "DATABASE_URL": "", "POSTGRES_URL": ""},
+        ):
+            with self.assertRaisesRegex(RuntimeError, "DATABASE_URL or POSTGRES_URL"):
                 with database.connect():
                     pass
+
+    def test_postgres_url_alias_is_supported(self):
+        with patch.dict(
+            "os.environ",
+            {"DATABASE_URL": "", "POSTGRES_URL": "postgresql://example"},
+        ):
+            self.assertTrue(database.uses_postgres())
 
     def test_postgres_connection_translates_sqlite_placeholders(self):
         connection = Mock()

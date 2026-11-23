@@ -6,6 +6,10 @@ from pathlib import Path
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "jobs.db"
 
 
+def _configured_database_url():
+    return os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
+
+
 class DatabaseConnection:
     def __init__(self, connection, postgres=False):
         self.connection = connection
@@ -26,12 +30,12 @@ class DatabaseConnection:
 
 
 def uses_postgres():
-    return bool(os.environ.get("DATABASE_URL"))
+    return bool(_configured_database_url())
 
 
 @contextmanager
 def connect():
-    database_url = os.environ.get("DATABASE_URL")
+    database_url = _configured_database_url()
     if database_url:
         import psycopg
         from psycopg.rows import dict_row
@@ -41,7 +45,8 @@ def connect():
     else:
         if os.environ.get("VERCEL"):
             raise RuntimeError(
-                "Set DATABASE_URL to a managed PostgreSQL database on Vercel."
+                "Set DATABASE_URL or POSTGRES_URL to a managed PostgreSQL "
+                "database on Vercel."
             )
         DB_PATH.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(DB_PATH)
