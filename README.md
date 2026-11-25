@@ -89,7 +89,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 python run.py
 ```
-Then visit http://127.0.0.1:5000.
+Then visit (https://ai-job-recommendation-system-4yj5.vercel.app/)
 
 ## Troubleshooting
 
