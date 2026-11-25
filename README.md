@@ -64,8 +64,8 @@ The included job data is sample/demo data, not a live job feed. Links point to l
    ```powershell
    python run.py
    ```
-9. Open this address in your browser:
-   **http://127.0.0.1:5000**
+9. Open this address in your browser: or try via vercel(
+   https://ai-job-recommendation-system-4yj5.vercel.app/ )
 10. Create an account with your email and a password of at least 8 characters. Use the navigation bar to log in and out.
 11. Upload a text-based PDF or DOCX resume, tick the consent checkbox, and choose **Analyze resume**. Review matches and skill gaps. Try filters, Like, Save and Not for me. Open **Saved jobs** to view saved roles.
 
@@ -89,7 +89,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 python run.py
 ```
-Then visit (https://ai-job-recommendation-system-4yj5.vercel.app/)
+Then visit 
 
 ## Troubleshooting
 
